@@ -8,16 +8,15 @@
 
 #pragma once
 
-using TElem = unsigned char;
+using TElem = unsigned char;  
 
-size_t const N = 126;
+size_t const N = 300; // 27'000'000 Elements
 
 // calculate one iteration of game of life
 void GameOfLife(TElem const current[N][N][N], TElem next[N][N][N]);
 
-
 // calculates if a cell with given Index is alive
-TElem IsAlive_Rule2333(TElem const current[N][N][N], size_t const z, size_t const y, size_t const x);
+TElem IsAlive_Rule2633(TElem const current[N][N][N], size_t const z, size_t const y, size_t const x);
 
 // returns the amount of neighbours of a given cell
 size_t CountNeighbours(TElem const current[N][N][N], size_t const z, size_t const y, size_t const x);
@@ -29,25 +28,30 @@ size_t CountNeighbours(TElem const current[N][N][N], size_t const z, size_t cons
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <numeric>
+#include <vector>
+#include <execution>
 
 
 
-void GameOfLife(TElem const current[N][N][N], TElem next[N][N][N])
+inline void GameOfLife(TElem const current[N][N][N], TElem next[N][N][N])
 {
-	for (size_t z = 0; z < N; ++z)
-	{
-		for (size_t y = 0; y < N; ++y)
+	std::vector<size_t> range(N);
+	std::iota(range.begin(), range.end(), 0);
+	for_each(std::execution::par_unseq ,range.cbegin(), range.cend(), [&](auto z)
 		{
-			for (size_t x = 0; x < N; ++x)
+			for (size_t y = 0; y < N; ++y)
 			{
-				next[z][y][x] = IsAlive_Rule2333(current, z, y, x);
+				for (size_t x = 0; x < N; ++x)
+				{
+					next[z][y][x] = IsAlive_Rule2633(current, z, y, x);
+				}
 			}
-		}
-	}
+		});
 }
 
 
-inline TElem IsAlive_Rule2333(TElem const current[N][N][N], size_t const z, size_t const y, size_t const x)
+inline TElem IsAlive_Rule2633(TElem const current[N][N][N], size_t const z, size_t const y, size_t const x)
 {
 	assert(x < N);
 	assert(y < N);
